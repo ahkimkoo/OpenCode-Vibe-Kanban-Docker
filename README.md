@@ -8,6 +8,8 @@ Docker image based on Ubuntu 24.04 LTS, pre-installed with OpenCode and Vibe-Kan
 
 - **OpenCode**: Open-source AI programming agent
 - **Vibe-Kanban**: Project management tool
+- **Docker**: Full Docker engine with Docker Compose support (Docker-in-Docker)
+- **SSH**: SSH server for remote access
 - **Node.js 20**: Installed via NodeSource repository
 - **Python 3**: Includes pip package manager
 - **Git**: Version control system
@@ -25,11 +27,12 @@ The following plugins are installed and can be used in OpenCode:
 
 ## Port Mappings
 
-| Port | Service | Description |
+ | Port | Service | Description |
 |------|---------|-------------|
-| 4096  | OpenCode | OpenCode Web server |
-| 3721  | Vibe-Kanban | Vibe-Kanban Web interface |
-| 2026  | Reserved | For user custom services |
+ | 4096  | OpenCode | OpenCode Web server |
+ | 3927  | Vibe-Kanban | Vibe-Kanban Web interface |
+ | 2026  | Reserved | For user custom services |
+ | 2222  | SSH | SSH server for remote access |
 
 ## Volume Mappings
 
@@ -37,6 +40,8 @@ The following plugins are installed and can be used in OpenCode:
 |-----------|----------------|-------------|
 | `./project` | `/root/project` | Default working directory, project files stored here |
 | `./vibe-kanban` | `/var/tmp/vibe-kanban` | Vibe-Kanban data directory |
+| `./app` | `/app` | Application directory |
+| `/var/run/docker.sock` | `/var/run/docker.sock` | Docker socket for Docker-in-Docker |
 
 ## Quick Start
 
@@ -63,7 +68,7 @@ docker compose up -d
 3. Access the services
 
 - **OpenCode**: http://localhost:4096
-- **Vibe-Kanban**: http://localhost:3721
+- **Vibe-Kanban**: http://localhost:3927
 
 ### Running with Docker Directly
 
@@ -71,11 +76,15 @@ docker compose up -d
 docker build -t opencode-vibe:latest .
 docker run -d \
   --name opencode-vibe \
+  --privileged \
   -p 4096:4096 \
-  -p 3721:3721 \
+  -p 3927:3927 \
   -p 2026:2026 \
+  -p 2222:2222 \
   -v $(pwd)/project:/root/project \
   -v $(pwd)/vibe-kanban:/var/tmp/vibe-kanban \
+  -v $(pwd)/app:/app \
+  -v /var/run/docker.sock:/var/run/docker.sock \
   opencode-vibe:latest
 ```
 
@@ -98,7 +107,38 @@ This is expected behavior. If secure access is needed, you can set the environme
 
 ### Vibe-Kanban
 
-The Vibe-Kanban server starts automatically when the container starts, listening on port 3721.
+The Vibe-Kanban server starts automatically when the container starts, listening on port 3927.
+
+### SSH Access
+
+The SSH server starts automatically when the container starts, listening on port 2222.
+
+**Connection details:**
+- Host: localhost (or your server IP)
+- Port: 2222
+- Username: root
+- Password: pwd4root
+
+```bash
+ssh -p 2222 root@localhost
+```
+
+### Docker-in-Docker
+
+The container includes a full Docker installation that starts automatically. This allows you to run and manage Docker containers from within the container.
+
+**Docker configuration:**
+- Storage driver: fuse-overlayfs (required for running Docker inside containers)
+- Custom network configuration to avoid conflicts with host:
+  - Bridge IP: 192.168.200.1/24
+  - Default address pools: 10.200.0.0/16
+  - MTU: 1400
+- Data directory: /app/docker-data
+
+**Docker Compose:**
+Both `docker compose` and `docker-compose` commands are available.
+
+**Note:** For Docker-in-Docker to work properly, the container must be started in privileged mode and the Docker socket must be mounted. These are configured in docker-compose.yml.
 
 ### Custom Services
 
@@ -189,12 +229,24 @@ Software components included in this image follow their respective licenses:
 
 ## Notes
 
-1. **Port conflicts**: Default ports 4096, 3721, and 2026 may be occupied by other services. Please ensure these ports are available or modify the port mappings.
+1. **Port conflicts**: Default ports 4096, 3927, 2026, and 2222 may be occupied by other services. Please ensure these ports are available or modify the port mappings.
 2. **Data persistence**: All data is saved to the host via volume mappings. Deleting the container will not lose data.
 3. **Security**: By default, the OpenCode server has no password set. In production, please set the `OPENCODE_SERVER_PASSWORD` environment variable.
-4. **Playwright browser**: The Playwright Chromium browser is not pre-installed. If needed, install it with `npx playwright install chromium`.
+4. **SSH security**: The default SSH password (pwd4root) should be changed in production environments. You can modify it by rebuilding the image with a custom configuration.
+5. **Docker-in-Docker**: Running Docker inside Docker requires privileged mode and Docker socket mounting, which are configured in docker-compose.yml. This setup is suitable for development but should be carefully evaluated for production use.
+6. **Playwright browser**: The Playwright Chromium browser is not pre-installed. If needed, install it with `npx playwright install chromium`.
 
 ## Changelog
+
+### v2.0.0 (2026-01-23)
+
+- Add Docker engine with Docker-in-Docker support
+- Add SSH server for remote access (port 2222, root/pwd4root)
+- Configure Docker for container environment (fuse-overlayfs, custom network)
+- Add Docker init script for service management
+- Update docker-compose.yml with privileged mode and Docker socket mount
+- Add app volume mapping (./app → /app)
+- Update documentation for SSH and Docker features
 
 ### v1.0.0 (2026-01-23)
 
@@ -203,5 +255,5 @@ Software components included in this image follow their respective licenses:
 - Install Vibe-Kanban
 - Pre-install 5 OpenCode plugins (oh-my-opencode, superpowers, playwright-mcp, agent-browser, chrome-devtools-mcp)
 - Configure dual service startup scripts
-- Port mappings: 4096 (OpenCode), 3721 (Vibe-Kanban), 2026 (custom)
+- Port mappings: 4096 (OpenCode), 3927 (Vibe-Kanban), 2026 (custom)
 - Volume mapping support for project persistence

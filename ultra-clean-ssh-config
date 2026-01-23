@@ -1,0 +1,69 @@
+# SSH server configuration - Built from scratch, no includes
+
+# Basic settings
+Port 2222
+AddressFamily inet
+
+# Listen ONLY on localhost
+ListenAddress 127.0.0.1
+
+# Authentication
+PermitRootLogin yes
+PasswordAuthentication yes
+PubkeyAuthentication yes
+
+# Logging
+SyslogFacility AUTH
+LogLevel INFO
+
+# Simple PAM
+account sufficient
+session    sufficient
+password    sufficient
+
+# User environment
+PermitUserEnvironment no
+
+# Disable ALL forwarding
+GatewayPorts no
+X11Forwarding no
+AllowTcpForwarding no
+AllowAgentForwarding no
+PermitTunnel no
+X11Forwarding no
+
+# Allow users
+AllowUsers root
+
+# Disable sftp
+Subsystem sftp /usr/lib/openssh/sftp-server
+
+# Disable empty passwords
+PermitEmptyPasswords no
+
+# Disable keyboard-interactive
+KbdInteractiveAuthentication no
+
+# No challenge-response
+KbdInteractiveAuthentication no
+
+# No Kerberos
+
+# GSSAPI
+GSSAPIAuthentication no
+
+# PAM
+account    sufficient
+session    sufficient
+
+# Password aging
+MaxStartups 0
+MaxAuthTryTime 2m
+MaxSessions 10
+
+# TCP keepalive
+TCPKeepAlive yes
+ClientAliveInterval 300
+ClientAliveCountMax 3
+
+# MaxStartups 0

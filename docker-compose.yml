@@ -6,11 +6,15 @@ services:
     container_name: opencode-vibe
     ports:
       - "4096:4096"
-      - "3721:3721"
+      - "3927:3927"
       - "2026:2026"
+      - "2222:2222"
     volumes:
       - ./project:/root/project
       - ./vibe-kanban:/var/tmp/vibe-kanban
+      - ./app:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    privileged: true
     stdin_open: true
     tty: true
     restart: unless-stopped

@@ -1,0 +1,60 @@
+# Minimal SSH configuration for Docker container
+
+# Listen on port 2222
+Port 2222
+
+# Listen on localhost only
+ListenAddress 127.0.0.1
+
+# Address family
+AddressFamily inet
+
+# Authentication
+PermitRootLogin yes
+PasswordAuthentication yes
+
+# PAM authentication (Unix, not nologin)
+UsePAM yes
+
+# Logging
+SyslogFacility AUTH
+LogLevel INFO
+
+# Public key authentication
+PubkeyAuthentication yes
+
+# Disable empty passwords
+PermitEmptyPasswords no
+
+# Disable keyboard-interactive
+KbdInteractiveAuthentication no
+
+# Disable challenge-response
+KbdInteractiveAuthentication no
+
+# Max auth attempts
+MaxAuthTries 6
+
+# Max sessions
+MaxSessions 10
+
+# TCP keepalive
+TCPKeepAlive yes
+ClientAliveInterval 300
+ClientAliveCountMax 3
+
+# Disable forwardings
+AllowTcpForwarding no
+AllowAgentForwarding no
+PermitTunnel no
+X11Forwarding no
+
+# Allow users
+AllowUsers root
+
+# Disable sftp subsystem
+Subsystem sftp /usr/lib/openssh/sftp-server
+
+# PAM configuration
+account required     pam_unix.so
+session required     pam_unix.so
