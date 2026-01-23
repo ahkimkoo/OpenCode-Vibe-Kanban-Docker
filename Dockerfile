@@ -3,7 +3,7 @@ FROM ubuntu:24.04
 
 # Set environment variables to avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=UTC
+ENV TZ=Asia/Shanghai
 
 # Create working directory
 WORKDIR /root

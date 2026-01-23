@@ -191,6 +191,7 @@ docker system prune -a
 2. **数据持久化**: 所有数据都通过卷映射保存到宿主机。删除容器不会丢失数据。
 3. **安全**: 默认情况下，OpenCode服务器未设置密码。在生产环境中，请设置 `OPENCODE_SERVER_PASSWORD` 环境变量。
 4. **Playwright浏览器**: Playwright的Chromium浏览器未预安装，需要时可使用 `npx playwright install chromium` 安装。
+5. **时区设置**: 容器时区已设置为 `Asia/Shanghai`（中国标准时间 CST）。
 
 ## 更新日志
 
