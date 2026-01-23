@@ -1,0 +1,18 @@
+services:
+  opencode:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: opencode-vibe
+    ports:
+      - "4096:4096"
+      - "3721:3721"
+      - "2026:2026"
+    volumes:
+      - ./project:/root/project
+      - ./vibe-kanban:/var/tmp/vibe-kanban
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    environment:
+      - TZ=UTC
