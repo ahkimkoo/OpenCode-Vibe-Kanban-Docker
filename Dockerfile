@@ -27,6 +27,29 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Golang (latest stable)
+RUN curl -fsSL https://go.dev/dl/go1.21.6.linux-amd64.tar.gz -o /tmp/go.tar.gz \
+    && tar -C /usr/local -xzf /tmp/go.tar.gz \
+    && rm /tmp/go.tar.gz \
+    && export PATH=/usr/local/go/bin:${PATH} \
+    && go version
+
+# Install Rust via apt (faster, more reliable than rustup download)
+RUN apt-get update \
+    && apt-get install -y rustc cargo \
+    && rm -rf /var/lib/apt/lists/* \
+    && rustc --version \
+    && cargo --version
+
+# Install Miniconda and configure custom env path
+RUN mkdir -p /app/conda-env \
+    && curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh \
+    && bash /tmp/miniconda.sh -b -p /root/miniconda3 \
+    && rm /tmp/miniconda.sh \
+    && /root/miniconda3/bin/conda config --append envs_dirs /app/conda-env \
+    && echo "export PATH=/root/miniconda3/bin:\$PATH" >> /root/.bashrc \
+    && /root/miniconda3/bin/conda --version
+
 # Install Docker
 RUN install -m 0755 -d /etc/apt/keyrings \
     && curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc \
@@ -40,7 +63,7 @@ RUN install -m 0755 -d /etc/apt/keyrings \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://opencode.ai/install | bash
-ENV PATH="/root/.opencode/bin:${PATH}"
+ENV PATH="/root/.opencode/bin:/root/miniconda3/bin:/usr/local/go/bin:/root/.cargo/bin:${PATH}"
 
 # Install vibe-kanban
 RUN npm install -g vibe-kanban@latest
