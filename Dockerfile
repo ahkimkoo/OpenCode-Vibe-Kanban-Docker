@@ -88,6 +88,11 @@ RUN mkdir -p /var/run/sshd \
 
 COPY clean-ssh-config /etc/ssh/sshd_config
 
+# Generate SSH host keys and set correct permissions
+RUN ssh-keygen -A \
+    && chmod 600 /etc/ssh/ssh_host_*_key \
+    && chmod 644 /etc/ssh/ssh_host_*_key.pub
+
 # Copy startup script
 COPY start.sh /root/start.sh
 RUN chmod +x /root/start.sh

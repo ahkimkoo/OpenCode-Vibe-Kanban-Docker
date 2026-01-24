@@ -1,6 +1,6 @@
 services:
   opencode:
-    image: successage/opencode-kanban
+    image: opencode-vibe-kanban:test
     container_name: opencode-vibe
     ports:
       - "2046:2046"
@@ -14,6 +14,7 @@ services:
       - ./userdata/.opencode:/root/.opencode
       - ./userdata/.config/opencode:/root/.config/opencode
       - ./userdata/.config/openspec:/root/.config/openspec
+      - /var/run/docker.sock:/var/run/docker.sock
     privileged: true
     stdin_open: true
     tty: true
