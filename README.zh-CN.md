@@ -33,10 +33,10 @@
 
  | 端口 | 服务 | 说明 |
 |------|---------|-------------|
-| 2046  | OpenCode | OpenCode Web 服务器 |
+ | 2046  | OpenCode | OpenCode Web 服务器 |
 | 3927  | Vibe-Kanban | Vibe-Kanban Web 界面 |
-| 2026  | 保留 | 用于用户自定义服务 |
-| 2222  | SSH | SSH 服务器，用于远程访问 |
+| 2027  | 保留 | 用于用户自定义服务 |
+| 2211  | SSH | SSH 服务器，用于远程访问 |
 
 ## 目录映射
 
@@ -71,7 +71,7 @@ docker compose up -d
 
 3. 访问服务
 
-- **OpenCode**: http://localhost:4096
+- **OpenCode**: http://localhost:2046
 - **Vibe-Kanban**: http://localhost:3927
 
 ### 使用 Docker 直接运行
@@ -81,10 +81,10 @@ docker build -t successage/opencode-vibe-kanban-docker:latest .
 docker run -d \
   --name opencode-vibe \
   --privileged \
-  -p 4096:4096 \
+  -p 2046:2046 \
   -p 3927:3927 \
-  -p 2026:2026 \
-  -p 2222:2222 \
+  -p 2027:2027 \
+  -p 2211:2211 \
   -v $(pwd)/project:/root/project \
   -v $(pwd)/vibe-kanban:/var/tmp/vibe-kanban \
   -v $(pwd)/app:/app \
@@ -100,7 +100,7 @@ docker run -d \
 
 ### OpenCode
 
-OpenCode 服务器会在容器启动时自动启动，监听端口 4096。
+OpenCode 服务器会在容器启动时自动启动，监听端口 2046。
 
 首次启动 OpenCode 时，你会看到一条警告消息：
 ```
@@ -115,16 +115,16 @@ Vibe-Kanban 服务器会在容器启动时自动启动，监听端口 3927。
 
 ### SSH 访问
 
-SSH 服务器会在容器启动时自动启动，监听端口 2222。
+SSH 服务器会在容器启动时自动启动，监听端口 2211。
 
 **连接详情：**
 - 主机：localhost（或你的服务器 IP）
-- 端口：2222
+- 端口：2211
 - 用户名：root
 - 密码：pwd4root
 
 ```bash
-ssh -p 2222 root@localhost
+ssh -p 2211 root@localhost
 ```
 
 ### Docker-in-Docker
@@ -146,15 +146,15 @@ ssh -p 2222 root@localhost
 
 ### 自定义服务
 
-端口 2026 预留给用户启动自己的服务。例如：
+端口 2027 预留给用户启动自己的服务。例如：
 
 ```bash
 docker exec -it opencode-vibe bash
 cd /root/project
-python -m http.server 2026
+python -m http.server 2027
 ```
 
-然后通过 http://localhost:2026 访问你的服务。
+然后通过 http://localhost:2027 访问你的服务。
 
 ## 停止服务
 
@@ -233,7 +233,7 @@ docker system prune -a
 
 ## 注意事项
 
-1. **端口冲突**: 默认端口 4096、3927、2026 和 2222 可能被其他服务占用。请确保这些端口可用或修改端口映射。
+1. **端口冲突**: 默认端口 2046、3927、2027 和 2211 可能被其他服务占用。请确保这些端口可用或修改端口映射。
 2. **数据持久化**: 所有数据都通过卷映射保存到宿主机。删除容器不会丢失数据。
 3. **安全**: 默认情况下，OpenCode 服务器未设置密码。在生产环境中，请设置 `OPENCODE_SERVER_PASSWORD` 环境变量。
 4. **SSH 安全**: 默认 SSH 密码（pwd4root）应在生产环境中修改。你可以通过重建镜像并自定义配置来修改它。
@@ -245,7 +245,7 @@ docker system prune -a
 ### v2.0.0 (2026-01-23)
 
 - 添加 Docker 引擎，支持 Docker-in-Docker
-- 添加 SSH 服务器，支持远程访问（端口 2222，root/pwd4root）
+- 添加 SSH 服务器，支持远程访问（端口 2211，root/pwd4root）
 - 为容器环境配置 Docker（fuse-overlayfs、自定义网络）
 - 添加 Docker init 脚本用于服务管理
 - 更新 docker-compose.yml，添加特权模式和 Docker 套接字挂载
@@ -259,5 +259,5 @@ docker system prune -a
 - 安装 Vibe-Kanban
 - 预装 5 个 OpenCode 插件（oh-my-opencode, superpowers, playwright-mcp, agent-browser, chrome-devtools-mcp）
 - 配置双服务启动脚本
-- 端口映射：4096 (OpenCode), 3927 (Vibe-Kanban), 2026 (自定义)
+- 端口映射：2046 (OpenCode), 3927 (Vibe-Kanban), 2027 (自定义)
 - 卷映射支持项目持久化

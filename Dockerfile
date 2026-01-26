@@ -112,9 +112,8 @@ RUN chmod +x /root/start.sh
 # 2046: OpenCode web server
 # 3927: vibe-kanban
 # 2027: User service (reserved)
-# 4096: Legacy OpenCode port (can be remapped if needed)
 # 2211: SSH server
-EXPOSE 2046 3927 2027 4096 2211
+EXPOSE 2046 3927 2027 2211
 
 # Set default working directory
 WORKDIR /root/project

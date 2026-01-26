@@ -71,7 +71,7 @@ docker compose up -d
 
 3. Access the services
 
-- **OpenCode**: http://localhost:4096
+- **OpenCode**: http://localhost:2046
 - **Vibe-Kanban**: http://localhost:3927
 
 ### Running with Docker Directly
@@ -81,7 +81,7 @@ docker build -t successage/opencode-vibe-kanban-docker:latest .
 docker run -d \
   --name opencode-vibe \
   --privileged \
-  -p 4096:4096 \
+  -p 2046:2046 \
   -p 3927:3927 \
   -p 2027:2027 \
   -p 2211:2211 \
@@ -100,7 +100,7 @@ docker run -d \
 
 ### OpenCode
 
-The OpenCode server starts automatically when the container starts, listening on port 4096.
+The OpenCode server starts automatically when the container starts, listening on port 2046.
 
 When starting OpenCode for the first time, you will see a warning message:
 ```
@@ -233,7 +233,7 @@ Software components included in this image follow their respective licenses:
 
 ## Notes
 
-1. **Port conflicts**: Default ports 4096, 3927, 2027, and 2211 may be occupied by other services. Please ensure these ports are available or modify the port mappings.
+1. **Port conflicts**: Default ports 2046, 3927, 2027, and 2211 may be occupied by other services. Please ensure these ports are available or modify the port mappings.
 2. **Data persistence**: All data is saved to the host via volume mappings. Deleting the container will not lose data.
 3. **Security**: By default, the OpenCode server has no password set. In production, please set the `OPENCODE_SERVER_PASSWORD` environment variable.
 4. **SSH security**: The default SSH password (pwd4root) should be changed in production environments. You can modify it by rebuilding the image with a custom configuration.
@@ -259,5 +259,5 @@ Software components included in this image follow their respective licenses:
 - Install Vibe-Kanban
 - Pre-install 5 OpenCode plugins (oh-my-opencode, superpowers, playwright-mcp, agent-browser, chrome-devtools-mcp)
 - Configure dual service startup scripts
-- Port mappings: 4096 (OpenCode), 3927 (Vibe-Kanban), 2027 (custom)
+- Port mappings: 2046 (OpenCode), 3927 (Vibe-Kanban), 2027 (custom)
 - Volume mapping support for project persistence

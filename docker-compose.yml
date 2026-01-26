@@ -14,7 +14,6 @@ services:
       - ./userdata/.opencode:/root/.opencode
       - ./userdata/.config/opencode:/root/.config/opencode
       - ./userdata/.config/openspec:/root/.config/openspec
-      - /var/run/docker.sock:/var/run/docker.sock
     privileged: true
     stdin_open: true
     tty: true
