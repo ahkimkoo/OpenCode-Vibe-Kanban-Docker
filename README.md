@@ -10,8 +10,12 @@ Docker image based on Ubuntu 24.04 LTS, pre-installed with OpenCode and Vibe-Kan
 - **Vibe-Kanban**: Project management tool
 - **Docker**: Full Docker engine with Docker Compose support (Docker-in-Docker)
 - **SSH**: SSH server for remote access
-- **Node.js 20**: Installed via NodeSource repository
-- **Python 3**: Includes pip package manager
+- **Programming Languages**: Pre-installed development environments
+  - **Go**: Golang development environment
+  - **Rust**: Rust toolchain and cargo package manager
+  - **Node.js 20**: Installed via NodeSource repository
+  - **Python 3**: Includes pip package manager
+  - **Conda**: Package and environment manager (envs stored in `/app/conda-env/`)
 - **Git**: Version control system
 - **Build tools**: build-essential toolchain
 

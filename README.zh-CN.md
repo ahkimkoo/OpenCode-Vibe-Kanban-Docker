@@ -10,8 +10,12 @@
 - **Vibe-Kanban**: 项目管理工具
 - **Docker**: 完整的 Docker 引擎和 Docker Compose 支持（Docker-in-Docker）
 - **SSH**: SSH 服务器，支持远程访问
-- **Node.js 20**: 通过 NodeSource 仓库安装
-- **Python 3**: 包含 pip 包管理器
+- **编程语言**: 预装的开发环境
+  - **Go**: Golang 开发环境
+  - **Rust**: Rust 工具链和 cargo 包管理器
+  - **Node.js 20**: 通过 NodeSource 仓库安装
+  - **Python 3**: 包含 pip 包管理器
+  - **Conda**: 包和环境管理器（环境存储在 `/app/conda-env/`）
 - **Git**: 版本控制系统
 - **构建工具**: build-essential 工具链
 
