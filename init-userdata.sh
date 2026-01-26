@@ -23,12 +23,14 @@ HOST_OPENCODE_DIR="$HOST_USERDATA_DIR/.opencode"
 HOST_CONFIG_DIR="$HOST_USERDATA_DIR/.config"
 HOST_OPENCODE_CONFIG_DIR="$HOST_CONFIG_DIR/opencode"
 HOST_OPENSPEC_CONFIG_DIR="$HOST_CONFIG_DIR/openspec"
+HOST_VIBE_KANBAN_CONFIG_DIR="$HOST_CONFIG_DIR/vibe-kanban"
 
 # Container paths
 CONTAINER_OPENCODE_DIR="/root/.opencode"
 CONTAINER_CONFIG_DIR="/root/.config"
 CONTAINER_OPENCODE_CONFIG_DIR="$CONTAINER_CONFIG_DIR/opencode"
 CONTAINER_OPENSPEC_CONFIG_DIR="$CONTAINER_CONFIG_DIR/openspec"
+CONTAINER_VIBE_KANBAN_SHARE_DIR="/root/.local/share/vibe-kanban"
 
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}OpenCode Userdata Initialization${NC}"
@@ -38,13 +40,15 @@ echo ""
 # Check if userdata directories already exist
 if [ -d "$HOST_OPENCODE_DIR" ] && [ "$(ls -A $HOST_OPENCODE_DIR 2>/dev/null)" ] || \
    [ -d "$HOST_OPENCODE_CONFIG_DIR" ] && [ "$(ls -A $HOST_OPENCODE_CONFIG_DIR 2>/dev/null)" ] || \
-   [ -d "$HOST_OPENSPEC_CONFIG_DIR" ] && [ "$(ls -A $HOST_OPENSPEC_CONFIG_DIR 2>/dev/null)" ]; then
+   [ -d "$HOST_OPENSPEC_CONFIG_DIR" ] && [ "$(ls -A $HOST_OPENSPEC_CONFIG_DIR 2>/dev/null)" ] || \
+   [ -d "$HOST_VIBE_KANBAN_CONFIG_DIR" ] && [ "$(ls -A $HOST_VIBE_KANBAN_CONFIG_DIR 2>/dev/null)" ]; then
     echo -e "${YELLOW}Warning: Userdata directories already exist on host with data.${NC}"
     echo ""
     echo "Existing directories:"
     [ -d "$HOST_OPENCODE_DIR" ] && echo "  - $HOST_OPENCODE_DIR"
     [ -d "$HOST_OPENCODE_CONFIG_DIR" ] && echo "  - $HOST_OPENCODE_CONFIG_DIR"
     [ -d "$HOST_OPENSPEC_CONFIG_DIR" ] && echo "  - $HOST_OPENSPEC_CONFIG_DIR"
+    [ -d "$HOST_VIBE_KANBAN_CONFIG_DIR" ] && echo "  - $HOST_VIBE_KANBAN_CONFIG_DIR"
     echo ""
     read -p "Do you want to continue? This may overwrite existing files. (y/N): " -n 1 -r
     echo ""
@@ -103,11 +107,13 @@ mkdir -p "$HOST_OPENCODE_DIR"
 mkdir -p "$HOST_CONFIG_DIR"
 mkdir -p "$HOST_OPENCODE_CONFIG_DIR"
 mkdir -p "$HOST_OPENSPEC_CONFIG_DIR"
+mkdir -p "$HOST_VIBE_KANBAN_CONFIG_DIR"
 echo "  Created: $HOST_USERDATA_DIR"
 echo "  Created: $HOST_OPENCODE_DIR"
 echo "  Created: $HOST_CONFIG_DIR"
 echo "  Created: $HOST_OPENCODE_CONFIG_DIR"
 echo "  Created: $HOST_OPENSPEC_CONFIG_DIR"
+echo "  Created: $HOST_VIBE_KANBAN_CONFIG_DIR"
 echo ""
 
 # Start temporary container
@@ -192,6 +198,19 @@ else
     echo -e "${YELLOW}  Skipped: $CONTAINER_OPENSPEC_CONFIG_DIR (not found in container)${NC}"
 fi
 
+# Copy ~/.local/share/vibe-kanban directory
+if docker exec $TEMP_CONTAINER test -d "$CONTAINER_VIBE_KANBAN_SHARE_DIR" 2>/dev/null; then
+    FILE_COUNT=$(docker exec $TEMP_CONTAINER find $CONTAINER_VIBE_KANBAN_SHARE_DIR -type f 2>/dev/null | wc -l)
+    if [ "$FILE_COUNT" -gt 0 ]; then
+        echo "  Copying $CONTAINER_VIBE_KANBAN_SHARE_DIR -> $HOST_VIBE_KANBAN_CONFIG_DIR"
+        docker cp $TEMP_CONTAINER:$CONTAINER_VIBE_KANBAN_SHARE_DIR/. "$HOST_VIBE_KANBAN_CONFIG_DIR/" 2>/dev/null || echo "    (Copy failed)"
+    else
+        echo -e "${YELLOW}  Skipped: $CONTAINER_VIBE_KANBAN_SHARE_DIR (empty directory)${NC}"
+    fi
+else
+    echo -e "${YELLOW}  Skipped: $CONTAINER_VIBE_KANBAN_SHARE_DIR (not found in container)${NC}"
+fi
+
 # Cleanup temporary container
 echo ""
 echo -e "${GREEN}Cleaning up temporary container...${NC}"
@@ -208,6 +227,7 @@ echo "The following directories have been initialized on the host:"
 echo "  - $HOST_OPENCODE_DIR"
 echo "  - $HOST_OPENCODE_CONFIG_DIR"
 echo "  - $HOST_OPENSPEC_CONFIG_DIR"
+echo "  - $HOST_VIBE_KANBAN_CONFIG_DIR"
 echo ""
 echo "These directories are now mapped to the container and will persist data."
 echo ""
