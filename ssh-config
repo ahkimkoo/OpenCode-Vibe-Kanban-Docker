@@ -50,11 +50,9 @@ PermitTunnel no
 X11Forwarding no
 
 # Allow users
-AllowUsers root
+AllowUsers user
 
 # Disable sftp subsystem
 Subsystem sftp /usr/lib/openssh/sftp-server
 
-# PAM configuration
-account required     pam_unix.so
-session required     pam_unix.so
+# PAM configuration (UsePAM yes above handles PAM via /etc/pam.d/sshd)

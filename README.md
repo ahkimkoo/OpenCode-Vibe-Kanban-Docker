@@ -7,6 +7,7 @@ Docker image based on Ubuntu 24.04 LTS, pre-installed with OpenCode and Vibe-Kan
 ## Features
 
 - **OpenCode**: Open-source AI programming agent
+- **Claude Code**: Claude AI code editor (pre-installed)
 - **Vibe-Kanban**: Project management tool
 - **Docker**: Full Docker engine with Docker Compose support (Docker-in-Docker)
 - **SSH**: SSH server for remote access
@@ -42,7 +43,7 @@ The following plugins are installed and can be used in OpenCode:
 
 | Host Path | Container Path | Description |
 |-----------|----------------|-------------|
-| `./project` | `/root/project` | Default working directory, project files stored here |
+| `./project` | `/home/user/project` | Default working directory, project files stored here |
 | `./vibe-kanban` | `/var/tmp/vibe-kanban` | Vibe-Kanban data directory |
 | `./app` | `/app` | Application directory |
 | `/var/run/docker.sock` | `/var/run/docker.sock` | Docker socket for Docker-in-Docker |
@@ -85,7 +86,7 @@ docker run -d \
   -p 3927:3927 \
   -p 2027:2027 \
   -p 2211:2211 \
-  -v $(pwd)/project:/root/project \
+  -v $(pwd)/project:/home/user/project \
   -v $(pwd)/vibe-kanban:/var/tmp/vibe-kanban \
   -v $(pwd)/app:/app \
   -v /var/run/docker.sock:/var/run/docker.sock \
@@ -96,7 +97,7 @@ docker run -d \
 
 ### Project Directory
 
-`/root/project` is the default working directory. Place your project files in the `./project` directory, and they will be automatically available in the container.
+`/home/user/project` is the default working directory. Place your project files in the `./project` directory, and they will be automatically available in the container.
 
 ### OpenCode
 
@@ -113,6 +114,28 @@ This is expected behavior. If secure access is needed, you can set the environme
 
 The Vibe-Kanban server starts automatically when the container starts, listening on port 3927.
 
+### Claude Code
+
+Claude Code is pre-installed and ready to use. Configuration files will be automatically synced between the container and host (`./userdata/.claude.json` and `./userdata/.claude/`).
+
+**First-time setup:**
+```bash
+# 1. Start the container
+docker-compose up -d
+
+# 2. Connect to container via SSH
+ssh -p 2211 user@localhost
+# Password: pwd4user
+
+# 3. Run Claude Code (will prompt for login on first run)
+claude
+
+# 4. Configuration files will be automatically saved to ./userdata/
+```
+
+**Subsequent usage:**
+Configuration persists across container restarts. Simply run `claude` after connecting via SSH.
+
 ### SSH Access
 
 The SSH server starts automatically when the container starts, listening on port 2211.
@@ -120,11 +143,11 @@ The SSH server starts automatically when the container starts, listening on port
 **Connection details:**
 - Host: localhost (or your server IP)
 - Port: 2211
-- Username: root
-- Password: pwd4root
+- Username: user
+- Password: pwd4user
 
 ```bash
-ssh -p 2211 root@localhost
+ssh -p 2211 user@localhost
 ```
 
 ### Docker-in-Docker
@@ -150,7 +173,7 @@ Port 2027 is reserved for users to start their own services. For example:
 
 ```bash
 docker exec -it opencode-vibe bash
-cd /root/project
+cd /home/user/project
 python -m http.server 2027
 ```
 
@@ -236,16 +259,16 @@ Software components included in this image follow their respective licenses:
 1. **Port conflicts**: Default ports 2046, 3927, 2027, and 2211 may be occupied by other services. Please ensure these ports are available or modify the port mappings.
 2. **Data persistence**: All data is saved to the host via volume mappings. Deleting the container will not lose data.
 3. **Security**: By default, the OpenCode server has no password set. In production, please set the `OPENCODE_SERVER_PASSWORD` environment variable.
-4. **SSH security**: The default SSH password (pwd4root) should be changed in production environments. You can modify it by rebuilding the image with a custom configuration.
+4. **SSH security**: The default SSH password (pwd4user) should be changed in production environments. You can modify it by rebuilding the image with a custom configuration.
 5. **Docker-in-Docker**: Running Docker inside Docker requires privileged mode and Docker socket mounting, which are configured in docker-compose.yml. This setup is suitable for development but should be carefully evaluated for production use.
-6. **Playwright browser**: The Playwright Chromium browser is not pre-installed. If needed, install it with `npx playwright install chromium`.
+6. **Playwright browser**: The Playwright Chromium browser is pre-installed and ready to use.
 
 ## Changelog
 
 ### v2.0.0 (2026-01-23)
 
 - Add Docker engine with Docker-in-Docker support
-- Add SSH server for remote access (port 2211, root/pwd4root)
+- Add SSH server for remote access (port 2211, user/pwd4user)
 - Configure Docker for container environment (fuse-overlayfs, custom network)
 - Add Docker init script for service management
 - Update docker-compose.yml with privileged mode and Docker socket mount

@@ -7,6 +7,7 @@
 ## 功能特性
 
 - **OpenCode**: 开源 AI 编程代理
+- **Claude Code**: Claude AI 代码编辑器（预装）
 - **Vibe-Kanban**: 项目管理工具
 - **Docker**: 完整的 Docker 引擎和 Docker Compose 支持（Docker-in-Docker）
 - **SSH**: SSH 服务器，支持远程访问
@@ -42,7 +43,7 @@
 
  | 宿主机路径 | 容器路径 | 说明 |
  |-----------|----------------|-------------|
- | `./project` | `/root/project` | 默认工作目录，项目文件存放于此 |
+ | `./project` | `/home/user/project` | 默认工作目录，项目文件存放于此 |
  | `./vibe-kanban` | `/var/tmp/vibe-kanban` | Vibe-Kanban 数据目录 |
  | `./app` | `/app` | 应用目录 |
  | `/var/run/docker.sock` | `/var/run/docker.sock` | Docker 套接字，用于 Docker-in-Docker |
@@ -85,7 +86,7 @@ docker run -d \
   -p 3927:3927 \
   -p 2027:2027 \
   -p 2211:2211 \
-  -v $(pwd)/project:/root/project \
+  -v $(pwd)/project:/home/user/project \
   -v $(pwd)/vibe-kanban:/var/tmp/vibe-kanban \
   -v $(pwd)/app:/app \
   -v /var/run/docker.sock:/var/run/docker.sock \
@@ -96,7 +97,7 @@ docker run -d \
 
 ### 项目目录
 
-`/root/project` 是默认的工作目录。将你的项目文件放在 `./project` 目录中，它们将自动在容器中可用。
+`/home/user/project` 是默认的工作目录。将你的项目文件放在 `./project` 目录中，它们将自动在容器中可用。
 
 ### OpenCode
 
@@ -113,6 +114,28 @@ OpenCode 服务器会在容器启动时自动启动，监听端口 2046。
 
 Vibe-Kanban 服务器会在容器启动时自动启动，监听端口 3927。
 
+### Claude Code
+
+Claude Code 已预装并可直接使用。配置文件会自动在容器和宿主机之间同步（`./userdata/.claude.json` 和 `./userdata/.claude/`）。
+
+**首次设置：**
+```bash
+# 1. 启动容器
+docker-compose up -d
+
+# 2. 通过 SSH 连接到容器
+ssh -p 2211 user@localhost
+# 密码：pwd4user
+
+# 3. 运行 Claude Code（首次运行会提示登录）
+claude
+
+# 4. 配置文件会自动保存到 ./userdata/
+```
+
+**后续使用：**
+配置文件会在容器重启后保持。只需通过 SSH 连接后运行 `claude` 即可。
+
 ### SSH 访问
 
 SSH 服务器会在容器启动时自动启动，监听端口 2211。
@@ -120,11 +143,11 @@ SSH 服务器会在容器启动时自动启动，监听端口 2211。
 **连接详情：**
 - 主机：localhost（或你的服务器 IP）
 - 端口：2211
-- 用户名：root
-- 密码：pwd4root
+- 用户名：user
+- 密码：pwd4user
 
 ```bash
-ssh -p 2211 root@localhost
+ssh -p 2211 user@localhost
 ```
 
 ### Docker-in-Docker
@@ -150,7 +173,7 @@ ssh -p 2211 root@localhost
 
 ```bash
 docker exec -it opencode-vibe bash
-cd /root/project
+cd /home/user/project
 python -m http.server 2027
 ```
 
@@ -236,16 +259,16 @@ docker system prune -a
 1. **端口冲突**: 默认端口 2046、3927、2027 和 2211 可能被其他服务占用。请确保这些端口可用或修改端口映射。
 2. **数据持久化**: 所有数据都通过卷映射保存到宿主机。删除容器不会丢失数据。
 3. **安全**: 默认情况下，OpenCode 服务器未设置密码。在生产环境中，请设置 `OPENCODE_SERVER_PASSWORD` 环境变量。
-4. **SSH 安全**: 默认 SSH 密码（pwd4root）应在生产环境中修改。你可以通过重建镜像并自定义配置来修改它。
+4. **SSH 安全**: 默认 SSH 密码（pwd4user）应在生产环境中修改。你可以通过重建镜像并自定义配置来修改它。
 5. **Docker-in-Docker**: 在 Docker 中运行 Docker 需要特权模式和 Docker 套接字挂载，这些已在 docker-compose.yml 中配置。此设置适合开发环境，但在生产环境中应仔细评估。
-6. **Playwright 浏览器**: Playwright 的 Chromium 浏览器未预安装，需要时可使用 `npx playwright install chromium` 安装。
+6. **Playwright 浏览器**: Playwright 的 Chromium 浏览器已预安装，可直接使用。
 
 ## 更新日志
 
 ### v2.0.0 (2026-01-23)
 
 - 添加 Docker 引擎，支持 Docker-in-Docker
-- 添加 SSH 服务器，支持远程访问（端口 2211，root/pwd4root）
+- 添加 SSH 服务器，支持远程访问（端口 2211，user/pwd4user）
 - 为容器环境配置 Docker（fuse-overlayfs、自定义网络）
 - 添加 Docker init 脚本用于服务管理
 - 更新 docker-compose.yml，添加特权模式和 Docker 套接字挂载

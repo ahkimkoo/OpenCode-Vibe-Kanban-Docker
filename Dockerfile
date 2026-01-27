@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
 
 # Create working directory
-WORKDIR /root
+WORKDIR /home/user
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     lsb-release \
     openssh-server \
+    sudo \
     fuse-overlayfs \
     unzip \
     && rm -rf /var/lib/apt/lists/*
@@ -28,9 +29,17 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Bun for oh-my-opencode
-RUN curl -fsSL https://bun.sh/install | bash
-ENV PATH="/root/.bun/bin:${PATH}"
+# Install Claude Code
+RUN curl -fsSL https://claude.ai/install.sh | bash
+
+# Install Playwright
+RUN npm install -g playwright \
+    && playwright install \
+    && playwright install chrome
+
+# Install agent-browser
+RUN npm install -g agent-browser \
+    && agent-browser install
 
 # Install Golang (latest stable)
 RUN curl -fsSL https://go.dev/dl/go1.21.6.linux-amd64.tar.gz -o /tmp/go.tar.gz \
@@ -49,11 +58,11 @@ RUN apt-get update \
 # Install Miniconda and configure custom env path
 RUN mkdir -p /app/conda-env \
     && curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o /tmp/miniconda.sh \
-    && bash /tmp/miniconda.sh -b -p /root/miniconda3 \
+    && bash /tmp/miniconda.sh -b -p /home/user/miniconda3 \
     && rm /tmp/miniconda.sh \
-    && /root/miniconda3/bin/conda config --append envs_dirs /app/conda-env \
-    && echo "export PATH=/root/miniconda3/bin:\$PATH" >> /root/.bashrc \
-    && /root/miniconda3/bin/conda --version
+    && /home/user/miniconda3/bin/conda config --append envs_dirs /app/conda-env \
+    && echo "export PATH=/home/user/miniconda3/bin:\$PATH" >> /home/user/.bashrc \
+    && /home/user/miniconda3/bin/conda --version
 
 # Install Docker
 RUN install -m 0755 -d /etc/apt/keyrings \
@@ -68,24 +77,22 @@ RUN install -m 0755 -d /etc/apt/keyrings \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://opencode.ai/install | bash
-ENV PATH="/root/.opencode/bin:/root/.bun/bin:/root/miniconda3/bin:/usr/local/go/bin:/root/.cargo/bin:${PATH}"
-
-# Install Bun for oh-my-opencode
-RUN curl -fsSL https://bun.sh/install | bash
-
-# Install oh-my-opencode (non-interactive mode for Docker)
-RUN bunx oh-my-opencode install --no-tui --claude=no --gemini=no --copilot=no --openai=no --opencode-zen=no --zai-coding-plan=no
+ENV PATH="/home/user/.opencode/bin:/home/user/.bun/bin:/home/user/miniconda3/bin:/usr/local/go/bin:/home/user/.cargo/bin:${PATH}"
 
 # Install vibe-kanban
 #RUN npm install -g vibe-kanban@latest
 
-# Create project directory
-RUN mkdir -p /root/project
-
-# Create vibe-kanban directory
-#RUN mkdir -p /var/tmp/vibe-kanban
-
-RUN mkdir -p /app/docker-data
+# Create user with sudo privileges and setup directories
+RUN userdel -r ubuntu 2>/dev/null || true \
+    && useradd -m -u 1000 -s /bin/bash user \
+    && echo 'user:pwd4user' | chpasswd \
+    && echo 'user ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers \
+    && mkdir -p /home/user/project \
+    && mkdir -p /home/user/.local/state \
+    && mkdir -p /home/user/.local/share \
+    && mkdir -p /app/docker-data \
+    && usermod -aG docker user \
+    && chown -R user:user /home/user
 
 COPY docker-daemon.json /etc/docker/daemon.json
 
@@ -93,20 +100,32 @@ COPY docker-init.sh /etc/init.d/docker
 RUN chmod +x /etc/init.d/docker
 
 RUN mkdir -p /var/run/sshd \
-    && echo 'root:pwd4root' | chpasswd \
     && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
     && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 
-COPY clean-ssh-config /etc/ssh/sshd_config
+COPY ssh-config /etc/ssh/sshd_config
 
 # Generate SSH host keys and set correct permissions
 RUN ssh-keygen -A \
     && chmod 600 /etc/ssh/ssh_host_*_key \
     && chmod 644 /etc/ssh/ssh_host_*_key.pub
 
+# Switch to user
+USER user
+
+# Install Bun for oh-my-opencode
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/home/user/.bun/bin:${PATH}"
+
+# Install oh-my-opencode platform package first
+RUN bun install oh-my-opencode-linux-x64
+
+# Install oh-my-opencode (non-interactive mode for Docker)
+RUN bunx oh-my-opencode install --no-tui --claude=no --gemini=no --copilot=no --openai=no --opencode-zen=no --zai-coding-plan=no
+
 # Copy startup script
-COPY start.sh /root/start.sh
-RUN chmod +x /root/start.sh
+COPY --chown=user start.sh /home/user/start.sh
+RUN chmod +x /home/user/start.sh
 
 # Expose ports
 # 2046: OpenCode web server
@@ -116,7 +135,7 @@ RUN chmod +x /root/start.sh
 EXPOSE 2046 3927 2027 2211
 
 # Set default working directory
-WORKDIR /root/project
+WORKDIR /home/user/project
 
-# Run startup script
-CMD ["/root/start.sh"]
+# Run startup script as user
+CMD ["/home/user/start.sh"]

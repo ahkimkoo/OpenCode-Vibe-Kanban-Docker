@@ -1,8 +1,0 @@
-# Minimal SSH configuration
-Port 2211
-PermitRootLogin yes
-PasswordAuthentication yes
-ChallengeResponseAuthentication yes
-UsePAM yes
-PermitEmptyPasswords no
-Subsystem sftp /usr/lib/openssh/sftp-server

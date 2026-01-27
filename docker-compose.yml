@@ -8,15 +8,17 @@ services:
       - "2027:2027"
       - "2211:2211"
     volumes:
-      - ./project:/root/project
+      - ./project:/home/user/project
       - ./vibe-kanban:/var/tmp/vibe-kanban
       - ./app:/app
-      - ./userdata/.opencode:/root/.opencode
-      - ./userdata/.config/opencode:/root/.config/opencode
-      - ./userdata/.config/openspec:/root/.config/openspec
-      - ./userdata/.config/vibe-kanban:/root/.local/share/vibe-kanban
-      - ./userdata/.vibe-kanban:/root/.vibe-kanban
-      - ./userdata/.local/share/opencode:/root/.local/share/opencode
+      - ./userdata/.opencode:/home/user/.opencode
+      - ./userdata/.config/opencode:/home/user/.config/opencode
+      - ./userdata/.config/openspec:/home/user/.config/openspec
+      - ./userdata/.config/vibe-kanban:/home/user/.local/share/vibe-kanban
+      - ./userdata/.vibe-kanban:/home/user/.vibe-kanban
+      - ./userdata/.local/share/opencode:/home/user/.local/share/opencode
+      - ./userdata/.claude.json:/home/user/.claude.json
+      - ./userdata/.claude:/home/user/.claude
     privileged: true
     stdin_open: true
     tty: true
