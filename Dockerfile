@@ -42,8 +42,8 @@ RUN npm install -g agent-browser \
 RUN curl -fsSL https://go.dev/dl/go1.21.6.linux-amd64.tar.gz -o /tmp/go.tar.gz \
     && tar -C /usr/local -xzf /tmp/go.tar.gz \
     && rm /tmp/go.tar.gz \
-    && export PATH=/usr/local/go/bin:${PATH} \
-    && go version
+    && /usr/local/go/bin/go version
+ENV PATH="/usr/local/go/bin:${PATH}"
 
 # Install Rust via apt (global, /usr/bin/)
 RUN apt-get update \
@@ -58,6 +58,7 @@ RUN mkdir -p /app/conda-env \
     && bash /tmp/miniconda.sh -b -p /home/user/miniconda3 \
     && rm /tmp/miniconda.sh \
     && /home/user/miniconda3/bin/conda config --append envs_dirs /app/conda-env
+ENV PATH="/home/user/miniconda3/bin:${PATH}"
 
 # Install Docker (global)
 RUN install -m 0755 -d /etc/apt/keyrings \
@@ -120,7 +121,7 @@ RUN bunx oh-my-opencode install --no-tui --claude=no --gemini=no --copilot=no --
 
 # Install OpenCode (user-level, installs to $HOME/.opencode/)
 RUN curl -fsSL https://opencode.ai/install | bash
-ENV PATH="/home/user/.opencode/bin:/home/user/.bun/bin:/home/user/miniconda3/bin:/usr/local/go/bin:/home/user/.cargo/bin:${PATH}"
+ENV PATH="/home/user/.local/bin:/home/user/.opencode/bin:/home/user/.bun/bin:/home/user/miniconda3/bin:/usr/local/go/bin:/home/user/.cargo/bin:${PATH}"
 
 # Copy startup script
 COPY --chown=user start.sh /home/user/start.sh
