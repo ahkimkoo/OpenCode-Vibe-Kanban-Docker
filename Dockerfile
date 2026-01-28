@@ -84,8 +84,13 @@ RUN userdel -r ubuntu 2>/dev/null || true \
     && usermod -aG docker user \
     && chown -R user:user /home/user
 
-# Add conda path to user's .bashrc
-RUN echo "export PATH=/home/user/miniconda3/bin:\$PATH" >> /home/user/.bashrc
+# Add all tool paths to user's .bashrc for SSH login
+RUN echo "export PATH=/home/user/.local/bin:/home/user/.opencode/bin:/home/user/.bun/bin:/home/user/miniconda3/bin:/usr/local/go/bin:/home/user/.cargo/bin:\$PATH" >> /home/user/.bashrc
+
+# Create .bash_profile to load .bashrc for SSH login shell
+RUN echo "if [ -f ~/.bashrc ]; then" > /home/user/.bash_profile \
+    && echo "    . ~/.bashrc" >> /home/user/.bash_profile \
+    && echo "fi" >> /home/user/.bash_profile
 
 COPY docker-daemon.json /etc/docker/daemon.json
 

@@ -28,6 +28,7 @@ if [ ! -f "Dockerfile" ]; then
 fi
 
 # Check if image already exists
+BUILD_OPTS=""
 if docker image inspect "$IMAGE_NAME" &>/dev/null; then
     echo -e "${YELLOW}Image '$IMAGE_NAME' already exists.${NC}"
     echo ""
@@ -36,22 +37,14 @@ if docker image inspect "$IMAGE_NAME" &>/dev/null; then
     docker image inspect "$IMAGE_NAME" --format='  Created: {{.Created}}' 2>/dev/null | head -1
     docker image inspect "$IMAGE_NAME" --format='  Size: {{.Size}}' 2>/dev/null | head -1 | sed 's/ bytes//' | awk '{printf "  Size: %.2f MB\n", $1/1024/1024}'
     echo ""
-    read -p "Do you want to rebuild the image? (y/N): " -n 1 -r
+    read -p "Rebuild with --no-cache? (y/N): " -n 1 -r
     echo ""
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "Build cancelled."
-        exit 0
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        BUILD_OPTS="--no-cache"
+        echo -e "${YELLOW}Will rebuild with --no-cache (no layer caching).${NC}"
+    else
+        echo -e "${GREEN}Will rebuild using layer cache (faster).${NC}"
     fi
-    echo ""
-    echo "Removing old image..."
-    docker rmi "$IMAGE_NAME" || {
-        echo -e "${YELLOW}Warning: Failed to remove old image. Trying with -f flag...${NC}"
-        docker rmi -f "$IMAGE_NAME" || {
-            echo -e "${RED}Error: Failed to remove old image. Please remove it manually:${NC}"
-            echo "  docker rmi -f $IMAGE_NAME"
-            exit 1
-        }
-    }
     echo ""
 fi
 
@@ -59,7 +52,7 @@ fi
 echo -e "${GREEN}Building image...${NC}"
 echo ""
 
-docker build -t "$IMAGE_NAME" .
+docker build $BUILD_OPTS -t "$IMAGE_NAME" .
 
 if [ $? -eq 0 ]; then
     echo ""
